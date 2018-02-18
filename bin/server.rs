@@ -37,16 +37,16 @@ impl CloudStore for CloudStoreServiceImpl {
         let mut r = StoreResponse::new();
         println!("Store request - filename: {}", file_name);
 
-        //let region = Region::Custom {
-        //    name: "hcy-storage".to_owned(),
-        //    endpoint: "http://192.168.1.69:9000".to_owned(),
-        //};
+        let region = Region::Custom {
+            name: "hcy-storage".to_owned(),
+            endpoint: "http://192.168.1.69:9000".to_owned(),
+        };
 
-        //let tls_client = default_tls_client().unwrap();
-        //let provider = DefaultCredentialsProvider::new().unwrap();
-        //let s3 = rusoto_s3::S3Client::new(tls_client, provider, region);
+        let tls_client = default_tls_client().unwrap();
+        let provider = DefaultCredentialsProvider::new().unwrap();
+        let s3 = rusoto_s3::S3Client::new(tls_client, provider, region);
 
-        let credentials = rusoto_credential::StaticProvider::new_minimal(
+        /*let credentials = rusoto_credential::StaticProvider::new_minimal(
             "AJ20P3XYDOURW7WZSHJ1".to_string(),
             "EVT9XzEw/77PevdntA88wjcEBF2cANl/Duc09mkl".to_string());
 
@@ -56,10 +56,10 @@ impl CloudStore for CloudStoreServiceImpl {
             ),
             credentials,
             rusoto_core::region::Region::Custom {
-                name: "minio".to_string(),
+                name: "hcy-minio".to_string(),
                 endpoint: endpoint,
             },
-        );
+        );*/
 
         let request = rusoto_s3::PutObjectRequest {
             bucket: bucket_name,
@@ -92,7 +92,7 @@ impl CloudStore for CloudStoreServiceImpl {
         let mut r = DeleteResponse::new();
         println!("Delete request - filename: {}", file_name);
 
-        let credentials = rusoto_credential::StaticProvider::new_minimal(
+        /*let credentials = rusoto_credential::StaticProvider::new_minimal(
             "AJ20P3XYDOURW7WZSHJ1".to_string(),
             "EVT9XzEw/77PevdntA88wjcEBF2cANl/Duc09mkl".to_string());
 
@@ -105,7 +105,16 @@ impl CloudStore for CloudStoreServiceImpl {
                 name: "minio".to_string(),
                 endpoint: endpoint,
             },
-        );
+        );*/
+
+        let region = Region::Custom {
+            name: "hcy-storage".to_owned(),
+            endpoint: "http://192.168.1.69:9000".to_owned(),
+        };
+
+        let tls_client = default_tls_client().unwrap();
+        let provider = DefaultCredentialsProvider::new().unwrap();
+        let s3 = rusoto_s3::S3Client::new(tls_client, provider, region);
 
         let request = rusoto_s3::DeleteObjectRequest {
             bucket: bucket_name,
