@@ -1,0 +1,25 @@
+syntax = "proto3";
+package cloudstore;
+
+message StorageObject {
+	string filename = 1;
+	string url = 2;
+}
+
+message StoreRequest {
+	string filename = 1;
+	bytes data = 2;
+}
+
+message DeleteRequest {
+	string filename = 1;
+}
+
+message DeleteResponse {
+	string filename = 1;
+}
+
+service CloudStoreService {
+	rpc Store(StoreRequest) returns (StorageObject) {}
+	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+}
