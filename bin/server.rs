@@ -1,21 +1,135 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(unused_mut)]
+#![allow(unused_variables)]
+
 extern crate futures;
 extern crate futures_cpupool;
 extern crate grpc;
 extern crate protobuf;
 extern crate cloudstore;
+extern crate rusoto_core;
+extern crate rusoto_s3;
+extern crate rusoto_credential;
 
 use std::thread;
+use std::env;
 
 use cloudstore::cloudstore_grpc::*;
 use cloudstore::cloudstore::*;
 
+use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
+use rusoto_s3::*;
+
+const BUCKET_NAME: &'static str = "p4content";
+
 struct CloudStoreServiceImpl;
 
 impl CloudStore for CloudStoreServiceImpl {
+    fn store(
+        &self,
+        _m: grpc::RequestOptions,
+        req: StoreRequest,
+    ) -> grpc::SingleResponse<StorageObject> {
+        let endpoint = "192.168.1.69:9000".to_string();
+        let bucket_name = "p4content".to_string();
+        let file_name = req.get_filename().to_string();
+        let mut r = StorageObject::new();
+        println!("Store request - filename: {}", file_name);
 
+        //let region = Region::Custom {
+        //    name: "hcy-storage".to_owned(),
+        //    endpoint: "http://192.168.1.69:9000".to_owned(),
+        //};
+
+        //let tls_client = default_tls_client().unwrap();
+        //let provider = DefaultCredentialsProvider::new().unwrap();
+        //let s3 = rusoto_s3::S3Client::new(tls_client, provider, region);
+
+        let credentials = rusoto_credential::StaticProvider::new_minimal(
+            "AJ20P3XYDOURW7WZSHJ1".to_string(),
+            "EVT9XzEw/77PevdntA88wjcEBF2cANl/Duc09mkl".to_string());
+
+        let s3 = rusoto_s3::S3Client::new(
+            rusoto_core::default_tls_client().expect(
+                "Unable to create default TLS client for Rusoto",
+            ),
+            credentials,
+            rusoto_core::region::Region::Custom {
+                name: "minio".to_string(),
+                endpoint: endpoint,
+            },
+        );
+
+        let request = rusoto_s3::PutObjectRequest {
+            bucket: bucket_name,
+            key: file_name,
+            body: Some(req.get_data().to_vec()),
+            //content_type: Some("text/plain".to_string()),
+            ..Default::default()
+        };
+
+        match s3.put_object(&request) {
+            Ok(out) => {
+                println!("put object: {:?}", request);
+            },
+            Err(err) => {
+                println!("put object failed: {:?}", err);
+            }
+        }
+
+        grpc::SingleResponse::completed(r)
+    }
+
+    fn delete(
+        &self,
+        _m: grpc::RequestOptions,
+        req: DeleteRequest,
+    ) -> grpc::SingleResponse<DeleteResponse> {
+        let endpoint = "192.168.1.69:9000".to_string();
+        let bucket_name = "p4content".to_string();
+        let file_name = req.get_filename().to_string();
+        let mut r = DeleteResponse::new();
+        println!("Delete request - filename: {}", file_name);
+
+        let credentials = rusoto_credential::StaticProvider::new_minimal(
+            "AJ20P3XYDOURW7WZSHJ1".to_string(),
+            "EVT9XzEw/77PevdntA88wjcEBF2cANl/Duc09mkl".to_string());
+
+        let s3 = rusoto_s3::S3Client::new(
+            rusoto_core::default_tls_client().expect(
+                "Unable to create default TLS client for Rusoto",
+            ),
+            credentials,
+            rusoto_core::region::Region::Custom {
+                name: "minio".to_string(),
+                endpoint: endpoint,
+            },
+        );
+
+        let request = rusoto_s3::DeleteObjectRequest {
+            bucket: bucket_name,
+            key: file_name,
+            ..Default::default()
+        };
+
+        match s3.delete_object(&request) {
+            Ok(out) => {
+                println!("delete object: {:?}", request);
+            },
+            Err(err) => {
+                println!("delete object failed: {:?}", err);
+            }
+        }
+
+        grpc::SingleResponse::completed(r)
+    }
 }
 
 fn main() {
+    let path = env::current_dir().unwrap();
+    println!("The current directory is {}", path.display());
+
     let mut server = grpc::ServerBuilder::new_plain();
     server.http.set_port(8080);
     server.add_service(CloudStoreServer::new_service_def(CloudStoreServiceImpl));

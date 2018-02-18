@@ -19,7 +19,7 @@ message DeleteResponse {
 	string filename = 1;
 }
 
-service CloudStoreService {
+service CloudStore {
 	rpc Store(StoreRequest) returns (StorageObject) {}
 	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
