@@ -45,6 +45,19 @@ fn main() {
         }
     }
 
+    // List files on cloud
+    let list_req = ListRequest::new();
+    let list_res = client.list(grpc::RequestOptions::new(), list_req);
+    match list_res.wait() {
+        Err(e) => panic!("{:?}", e),
+        Ok((_, stream)) => {
+            for stream_item in stream {
+                let response = stream_item.unwrap();
+                println!("> {}", response.get_filename());
+            }
+        }
+    }
+
     // Delete file from cloud
     let mut delete_req = DeleteRequest::new();
     delete_req.set_filename(test_file.clone());

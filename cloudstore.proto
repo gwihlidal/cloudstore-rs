@@ -26,8 +26,17 @@ message FetchResponse {
 	bytes data = 1;
 }
 
+message ListRequest {
+
+}
+
+message ListResponse {
+	string filename = 1;
+}
+
 service CloudStore {
 	rpc Store(StoreRequest) returns (StoreResponse) {}
 	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 	rpc Fetch(FetchRequest) returns (FetchResponse) {}
+	rpc List(ListRequest) returns (stream ListResponse) {}
 }

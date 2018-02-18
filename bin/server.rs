@@ -203,6 +203,59 @@ impl CloudStore for CloudStoreServiceImpl {
 
         grpc::SingleResponse::completed(r)
     }
+
+    fn list(
+        &self,
+        _m: grpc::RequestOptions,
+        _req: ListRequest,
+    ) -> grpc::StreamingResponse<ListResponse> {
+        let endpoint = "http://192.168.1.69:9000".to_string();
+        let bucket_name = "p4content".to_string();
+
+        let credentials = rusoto_credential::StaticProvider::new_minimal(
+            "AJ20P3XYDOURW7WZSHJ1".to_string(),
+            "EVT9XzEw/77PevdntA88wjcEBF2cANl/Duc09mkl".to_string());
+
+        let s3 = rusoto_s3::S3Client::new(
+            rusoto_core::default_tls_client().expect(
+                "Unable to create default TLS client for Rusoto",
+            ),
+            credentials,
+            rusoto_core::region::Region::Custom {
+                name: "minio".to_string(),
+                endpoint: endpoint,
+            },
+        );
+
+        let request = rusoto_s3::ListObjectsV2Request {
+            bucket: bucket_name,
+            //start_after: Some("foo".to_owned()),
+            ..Default::default()
+        };
+
+        let mut responses: Vec<ListResponse> = vec![];
+
+        match s3.list_objects_v2(&request) {
+            Ok(items) => {
+                println!("list objects: {:#?}", items);
+                for item in items.contents.iter() {
+                    for object in item {
+                        let key = &object.key;
+                        //let e_tag = &object.e_tag;
+
+                        let mut response = ListResponse::new();
+                         response.set_filename(key.clone().unwrap());
+                        responses.push(response);
+                    }
+                }
+            },
+            Err(err) => {
+                println!("delete object failed: {:?}", err);
+            }
+        }
+
+        grpc::StreamingResponse::iter(responses.into_iter())
+    }
 }
 
 fn main() {
