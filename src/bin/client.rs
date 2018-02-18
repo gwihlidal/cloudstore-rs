@@ -41,7 +41,7 @@ fn main() {
         Err(e) => panic!("{:?}", e),
         Ok((_, fetch, _)) => {
             println!("{:?}", fetch);
-            let fetch_data = fetch.get_data();
+            let _fetch_data = fetch.get_data();
         }
     }
 

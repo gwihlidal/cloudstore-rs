@@ -20,10 +20,10 @@ protoc-rust-grpc    = "0.2.1"
 
 [[bin]]
 name = "client"
-path = "bin/client.rs"
+path = "src/bin/client.rs"
 test = false
 
 [[bin]]
 name = "server"
-path = "bin/server.rs"
+path = "src/bin/server.rs"
 test = false
