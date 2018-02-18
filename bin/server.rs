@@ -133,6 +133,79 @@ impl CloudStore for CloudStoreServiceImpl {
 
         grpc::SingleResponse::completed(r)
     }
+
+    fn fetch(
+        &self,
+        _m: grpc::RequestOptions,
+        req: FetchRequest,
+    ) -> grpc::SingleResponse<FetchResponse> {
+        let endpoint = "192.168.1.69:9000".to_string();
+        let bucket_name = "p4content".to_string();
+        let file_name = req.get_filename().to_string();
+        let mut r = FetchResponse::new();
+        println!("Fetch request - filename: {}", file_name);
+
+        /*let credentials = rusoto_credential::StaticProvider::new_minimal(
+            "AJ20P3XYDOURW7WZSHJ1".to_string(),
+            "EVT9XzEw/77PevdntA88wjcEBF2cANl/Duc09mkl".to_string());
+
+        let s3 = rusoto_s3::S3Client::new(
+            rusoto_core::default_tls_client().expect(
+                "Unable to create default TLS client for Rusoto",
+            ),
+            credentials,
+            rusoto_core::region::Region::Custom {
+                name: "minio".to_string(),
+                endpoint: endpoint,
+            },
+        );*/
+
+        let region = Region::Custom {
+            name: "hcy-storage".to_owned(),
+            endpoint: "http://192.168.1.69:9000".to_owned(),
+        };
+
+        let tls_client = default_tls_client().unwrap();
+        let provider = DefaultCredentialsProvider::new().unwrap();
+        let s3 = rusoto_s3::S3Client::new(tls_client, provider, region);
+
+        let request = rusoto_s3::GetObjectRequest {
+            bucket: bucket_name,
+            key: file_name,
+            //range: Some("bytes=0-1".to_owned()),
+            ..Default::default()
+        };
+
+        let mut data = Vec::<u8>::new();
+
+        let result = s3.get_object(&request);
+        match result {
+            //Err(GetObjectError::NoSuchKey(_)) => (),
+            Ok(out) => {
+                println!("fetch object: {:?}", out);
+                match std::io::copy(&mut out.body.unwrap(), &mut data) {
+                    Err(err) => {
+                        println!("Failed to copy object data");
+                        return grpc::SingleResponse::err(grpc::Error::GrpcMessage(grpc::GrpcMessageError {
+                            grpc_status: 15,//grpc::grpc::GrpcStatus::DataLoss,
+                            grpc_message: "Failed to copy object data".to_string()
+                        }));
+                    },
+                    Ok(out) => r.set_data(data.to_owned()),
+                }
+                r.set_data(data);
+            },
+            Err(err) => {
+                println!("fetch object failed: {:?}", err);
+                return grpc::SingleResponse::err(grpc::Error::GrpcMessage(grpc::GrpcMessageError {
+                    grpc_status: 15,//grpc::grpc::GrpcStatus::DataLoss,
+                    grpc_message: "Failed to fetch object".to_string()
+                }));
+            }
+        }
+
+        grpc::SingleResponse::completed(r)
+    }
 }
 
 fn main() {

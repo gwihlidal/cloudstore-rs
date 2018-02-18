@@ -18,7 +18,16 @@ message DeleteResponse {
 	string filename = 1;
 }
 
+message FetchRequest {
+	string filename = 1;
+}
+
+message FetchResponse {
+	bytes data = 1;
+}
+
 service CloudStore {
 	rpc Store(StoreRequest) returns (StoreResponse) {}
 	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+	rpc Fetch(FetchRequest) returns (FetchResponse) {}
 }

@@ -42,7 +42,16 @@ fn main() {
     println!("{:?}", store_res.wait());
 
     // Fetch file from cloud
-
+    let mut fetch_req = FetchRequest::new();
+    fetch_req.set_filename(test_file.clone());
+    let fetch_res = client.fetch(grpc::RequestOptions::new(), fetch_req);
+    match fetch_res.wait() {
+        Err(e) => panic!("{:?}", e),
+        Ok((_, fetch, _)) => {
+            println!("{:?}", fetch);
+            let fetch_data = fetch.get_data();
+        }
+    }
 
     // Delete file from cloud
     let mut delete_req = DeleteRequest::new();
