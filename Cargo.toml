@@ -4,11 +4,26 @@ version = "0.0.1"
 authors = ["Graham Wihlidal <graham@wihlidal.ca>"]
 
 [dependencies]
-protobuf        = "1.4.3"
-futures         = "0.1.18"
-futures-cpupool = "0.1.8"
-tls-api         = "0.1.14"
-grpc            = "0.2.1"
+protobuf            = "1.4.3"
+futures             = "0.1.18"
+futures-cpupool     = "0.1.8"
+tls-api             = "0.1.14"
+grpc                = "0.2.1"
+rusoto_core         = "0.31.0"
+rusoto_s3           = "0.31.0"
+rusoto_credential   = "0.10.0"
+google-storage1     = "1.0.7+20171101"
+file                = "1.1.1"
 
 [build-dependencies]
-protoc-rust-grpc = "0.2.1"
+protoc-rust-grpc    = "0.2.1"
+
+[[bin]]
+name = "client"
+path = "bin/client.rs"
+test = false
+
+[[bin]]
+name = "server"
+path = "bin/server.rs"
+test = false
