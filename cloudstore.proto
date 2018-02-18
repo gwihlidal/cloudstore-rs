@@ -1,14 +1,13 @@
 syntax = "proto3";
 package cloudstore;
 
-message StorageObject {
-	string filename = 1;
-	string url = 2;
-}
-
 message StoreRequest {
 	string filename = 1;
 	bytes data = 2;
+}
+
+message StoreResponse {
+	string filename = 1;
 }
 
 message DeleteRequest {
@@ -20,6 +19,6 @@ message DeleteResponse {
 }
 
 service CloudStore {
-	rpc Store(StoreRequest) returns (StorageObject) {}
+	rpc Store(StoreRequest) returns (StoreResponse) {}
 	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }

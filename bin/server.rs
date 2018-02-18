@@ -30,11 +30,11 @@ impl CloudStore for CloudStoreServiceImpl {
         &self,
         _m: grpc::RequestOptions,
         req: StoreRequest,
-    ) -> grpc::SingleResponse<StorageObject> {
+    ) -> grpc::SingleResponse<StoreResponse> {
         let endpoint = "192.168.1.69:9000".to_string();
         let bucket_name = "p4content".to_string();
         let file_name = req.get_filename().to_string();
-        let mut r = StorageObject::new();
+        let mut r = StoreResponse::new();
         println!("Store request - filename: {}", file_name);
 
         //let region = Region::Custom {
