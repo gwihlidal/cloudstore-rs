@@ -1,8 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-
 extern crate futures;
 extern crate futures_cpupool;
 extern crate grpc;
@@ -21,7 +16,7 @@ use cloudstore::cloudstore::*;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_s3::*;
 
-const BUCKET_NAME: &'static str = "p4content";
+//const BUCKET_NAME: &'static str = "p4content";
 
 struct CloudStoreServiceImpl;
 
@@ -39,7 +34,7 @@ impl CloudStore for CloudStoreServiceImpl {
 
         let region = Region::Custom {
             name: "hcy-storage".to_owned(),
-            endpoint: "http://192.168.1.69:9000".to_owned(),
+            endpoint: endpoint.to_owned(),
         };
 
         let tls_client = default_tls_client().unwrap();
@@ -71,7 +66,7 @@ impl CloudStore for CloudStoreServiceImpl {
 
         match s3.put_object(&request) {
             Ok(out) => {
-                println!("put object: {:?}", request);
+                println!("put object: {:?}", out);
                 r.set_filename(req.get_filename().to_string());
             },
             Err(err) => {
@@ -110,7 +105,7 @@ impl CloudStore for CloudStoreServiceImpl {
 
         let region = Region::Custom {
             name: "hcy-storage".to_owned(),
-            endpoint: "http://192.168.1.69:9000".to_owned(),
+            endpoint: endpoint.to_owned(),
         };
 
         let tls_client = default_tls_client().unwrap();
@@ -125,7 +120,7 @@ impl CloudStore for CloudStoreServiceImpl {
 
         match s3.delete_object(&request) {
             Ok(out) => {
-                println!("delete object: {:?}", request);
+                println!("delete object: {:?}", out);
                 r.set_filename(req.get_filename().to_string());
             },
             Err(err) => {
@@ -164,7 +159,7 @@ impl CloudStore for CloudStoreServiceImpl {
 
         let region = Region::Custom {
             name: "hcy-storage".to_owned(),
-            endpoint: "http://192.168.1.69:9000".to_owned(),
+            endpoint: endpoint.to_owned(),
         };
 
         let tls_client = default_tls_client().unwrap();
@@ -186,14 +181,14 @@ impl CloudStore for CloudStoreServiceImpl {
             Ok(out) => {
                 println!("fetch object: {:?}", out);
                 match std::io::copy(&mut out.body.unwrap(), &mut data) {
-                    Err(err) => {
+                    Err(_err) => {
                         println!("Failed to copy object data");
                         return grpc::SingleResponse::err(grpc::Error::GrpcMessage(grpc::GrpcMessageError {
                             grpc_status: 15,//grpc::grpc::GrpcStatus::DataLoss,
                             grpc_message: "Failed to copy object data".to_string()
                         }));
                     },
-                    Ok(out) => r.set_data(data.to_owned()),
+                    Ok(_out) => r.set_data(data.to_owned()),
                 }
                 r.set_data(data);
             },
