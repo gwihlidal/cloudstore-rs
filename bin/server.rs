@@ -72,6 +72,7 @@ impl CloudStore for CloudStoreServiceImpl {
         match s3.put_object(&request) {
             Ok(out) => {
                 println!("put object: {:?}", request);
+                r.set_filename(req.get_filename().to_string());
             },
             Err(err) => {
                 println!("put object failed: {:?}", err);
@@ -125,6 +126,7 @@ impl CloudStore for CloudStoreServiceImpl {
         match s3.delete_object(&request) {
             Ok(out) => {
                 println!("delete object: {:?}", request);
+                r.set_filename(req.get_filename().to_string());
             },
             Err(err) => {
                 println!("delete object failed: {:?}", err);
