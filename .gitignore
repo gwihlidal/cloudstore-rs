@@ -13,3 +13,4 @@
 src/cloudstore.rs
 src/cloudstore_grpc.rs
 .vscode/
+*.code-workspace
