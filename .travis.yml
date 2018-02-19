@@ -1,0 +1,6 @@
+sudo: required
+services:
+  - docker
+language: generic
+script:
+  - docker build -t cloudstore .
