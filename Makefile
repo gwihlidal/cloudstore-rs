@@ -8,5 +8,9 @@ build:
 	docker build -t $(CONTAINER) .
 
 .PHONY: push
-push: build test
+push: build
 	docker push $(CONTAINER)
+
+.PHONY: run
+run:
+	docker run --rm -p 8080:8080 -it $(CONTAINER)
