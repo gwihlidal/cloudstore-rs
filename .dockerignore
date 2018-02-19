@@ -1,0 +1,8 @@
+target
+Dockerfile
+.dockerignore
+.git
+.gitignore
+cloudstore.code-workspace
+src/cloudstore.rs
+src/cloudstore_grpc.rs
