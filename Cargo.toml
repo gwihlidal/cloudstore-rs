@@ -1,6 +1,6 @@
 [package]
 name = "cloudstore"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Graham Wihlidal <graham@wihlidal.ca>"]
 description = "A gRPC microservice, written in rust, that marshalls objects and files to cloud storage like AWS S3, Google Cloud Storage, or other providers."
 homepage = "https://github.com/gwihlidal/cloudstore-rs"

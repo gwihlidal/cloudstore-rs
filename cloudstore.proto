@@ -30,8 +30,14 @@ message ListRequest {
 
 }
 
+message ObjectTag {
+	string key = 1;
+	string value = 2;
+}
+
 message ListResponse {
 	string filename = 1;
+	repeated ObjectTag tags = 2;
 }
 
 service CloudStore {

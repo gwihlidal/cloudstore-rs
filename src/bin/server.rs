@@ -244,7 +244,45 @@ impl CloudStore for CloudStoreServiceImpl {
                         //let e_tag = &object.e_tag;
 
                         let mut response = ListResponse::new();
-                         response.set_filename(key.clone().unwrap());
+                        response.set_filename(key.clone().unwrap());
+
+                        //let mut tags = ::protobuf::RepeatedField<ObjectTag>::new();
+
+                        let mut hash_string = "".to_string();
+
+                        let tagging_req = rusoto_s3::GetObjectTaggingRequest {
+                            bucket: bucket_name.clone(),
+                            key: key.clone().unwrap(),
+                            .. Default::default()
+                        };
+
+                        match s3.get_object_tagging(&tagging_req) {
+                            Ok(out) => {
+                            // let mut tag_set = &response.mut_tags();
+                                for tag_entry in out.tag_set.iter() {
+                                    /*println!("Tag - key:{} value:{}", tag_entry.key, tag_entry.value);
+                                    if &tag_entry.key == "sha256" {
+                                        hash_string = tag_entry.value.clone();
+                                        println!("Got sha256");
+                                    }*/
+
+                                    let mut tag = ObjectTag::new();
+                                    tag.set_key(tag_entry.key.clone());
+                                    tag.set_value(tag_entry.value.clone());
+                                    response.mut_tags().push(tag);
+                                }
+
+                                /*if out.tag_set.len() > 0 {
+                                    hash_string = out.tag_set[0].value.clone();
+                                }
+                                println!("get object tagging: {:?}", out);*/
+                            },
+                            Err(_err) => {
+                            }        
+                        };
+
+                        //println!("\t\"{}\", size: {} bytes, sha256: \"{}\"", object.key.clone().unwrap(), object.size.unwrap(), hash_string);
+
                         responses.push(response);
                     }
                 }

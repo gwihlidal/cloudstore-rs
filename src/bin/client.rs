@@ -54,6 +54,9 @@ fn main() {
             for stream_item in stream {
                 let response = stream_item.unwrap();
                 println!("> {}", response.get_filename());
+                for tag_item in response.tags.iter() {
+                    println!(">> key:{} value:{}", tag_item.get_key(), tag_item.get_value());
+                }
             }
         }
     }
