@@ -203,6 +203,8 @@ impl CloudStore for CloudStoreServiceImpl {
     ) -> grpc::StreamingResponse<ListResponse> {
         let mut responses: Vec<ListResponse> = vec![];
 
+        //println!("Starting list");
+
         let (tracer, span_rx) = Tracer::new(rustracing::sampler::AllSampler);
         {
             let span0 = tracer.span("list").start();
@@ -233,6 +235,7 @@ impl CloudStore for CloudStoreServiceImpl {
 
             match s3.list_objects_v2(&request) {
                 Ok(items) => {
+                    //println!("list objects: {:#?}", items); 
                     for item in items.contents.iter() {
                         for object in item {
                             let key = &object.key;
@@ -253,7 +256,8 @@ impl CloudStore for CloudStoreServiceImpl {
 
                             //let mut tags = ::protobuf::RepeatedField<ObjectTag>::new();
 
-                            let tagging_req = rusoto_s3::GetObjectTaggingRequest {
+                            // SLOWWW - does it download the actual data?...
+                            /*let tagging_req = rusoto_s3::GetObjectTaggingRequest {
                                 bucket: self.s3_bucket.clone(),
                                 key: key.clone().unwrap(),
                                 .. Default::default()
@@ -267,10 +271,14 @@ impl CloudStore for CloudStoreServiceImpl {
                                         tag.set_value(tag_entry.value.clone());
                                         response.mut_tags().push(tag);
                                     }
+
+                                    println!("get object tagging: {:?}", out);
                                 },
                                 Err(_err) => {
                                 }        
-                            };
+                            };*/
+
+                            //println!("\t\"{}\", size: {} bytes", object.key.clone().unwrap(), object.size.unwrap());
 
                             responses.push(response);
                         }
@@ -282,12 +290,16 @@ impl CloudStore for CloudStoreServiceImpl {
             }
         }
 
+        //println!("Ending list");
+
         track_try_unwrap!(self.reporter.report(&span_rx.try_iter().collect::<Vec<_>>()));
         grpc::StreamingResponse::iter(responses.into_iter())
     }
 }
 
 fn main() {
+    println!("Starting service");
+
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
 
@@ -297,8 +309,8 @@ fn main() {
     let bucket_name = "p4content".to_string();
 
     let credentials = rusoto_credential::StaticProvider::new_minimal(
-        "seedstorage".to_string(),
-        "seedstorage".to_string());
+        "ACCESS_KEY".to_string(),
+        "SECRET_KEY".to_string());
 
     let s3_region = rusoto_core::region::Region::Custom {
         name: "us-east-1".to_string(),
@@ -334,8 +346,10 @@ fn main() {
     let mut server = grpc::ServerBuilder::new_plain();
     server.http.set_port(8080);
     server.add_service(CloudStoreServer::new_service_def(service_impl));
-    server.http.set_cpu_pool_threads(4);
+    server.http.set_cpu_pool_threads(8);
     let _server = server.build().expect("server");
+
+    println!("Service started");
 
     loop {
         thread::park();
