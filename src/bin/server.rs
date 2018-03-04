@@ -10,6 +10,8 @@ extern crate rustracing;
 extern crate rustracing_jaeger;
 #[macro_use]
 extern crate trackable;
+extern crate env_logger;
+extern crate log;
 
 use std::thread;
 use std::env;
@@ -303,6 +305,8 @@ fn main() {
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
 
+    let _ = env_logger::try_init();
+
     //let tracing_url = String::from("gw-jaeger-agent.s33d.cloud:6831");
     let tracing_url = String::from("127.0.0.1:6831");
     let s3_endpoint = "http://gw-minio.s33d.cloud:9000".to_string();
@@ -312,9 +316,21 @@ fn main() {
         "ACCESS_KEY".to_string(),
         "SECRET_KEY".to_string());
 
-    let s3_region = rusoto_core::region::Region::Custom {
+    let s3_default_region = rusoto_core::region::Region::Custom {
         name: "us-east-1".to_string(),
         endpoint: s3_endpoint.clone(),
+    };
+
+    let s3_region = if let Ok(endpoint) = env::var("S3_ENDPOINT") {
+        let region = rusoto_core::region::Region::Custom {
+            name: "us-east-1".to_owned(),
+            endpoint: endpoint.to_owned()
+        };
+        println!("Picked up non-standard endpoint {:?} from S3_ENDPOINT env. variable", region);
+        region
+    } else {
+        s3_default_region
+        //Region::UsEast1
     };
 
     /*let s3 = rusoto_s3::S3Client::new(
@@ -350,7 +366,7 @@ fn main() {
     let _server = server.build().expect("server");
 
     println!("Service started");
-
+    
     loop {
         thread::park();
     }
